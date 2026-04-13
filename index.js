@@ -1,3 +1,8 @@
+const express = require('express');
+const app = express();
+app.get('/', (req, res) => { res.send('🏮 IzaKaya Botu 7/24 Aktif!'); });
+app.listen(3000, () => { console.log('🌐 Web sunucusu hazır.'); });
+
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const { QuickDB } = require("quick.db");
 const express = require('express'); 
