@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, EmbedBuilder, PermissionsBitField } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const { QuickDB } = require("quick.db");
 const db = new QuickDB();
 
@@ -11,10 +11,9 @@ const client = new Client({
     ]
 });
 
-// AYARLAR
+// BURASI ÇOK ÖNEMLİ: Tokeni sistemden (Secrets) çekiyoruz
 const config = {
-    token: "TOKEN_BURAYA",
-    prefix: ".", // Komutlar için (Opsiyonel)
+    token: process.env.TOKEN, 
     levelRoles: {
         "5": "Sokaktaki Yolcu",
         "10": "Çay Tiryakisi",
@@ -34,18 +33,13 @@ client.on('messageCreate', async (message) => {
     const userId = message.author.id;
     const guildId = message.guild.id;
 
-    // XP ve Level Verilerini Al
     let xp = await db.get(`xp_${guildId}_${userId}`) || 0;
     let level = await db.get(`level_${guildId}_${userId}`) || 1;
 
-    // Rastgele XP Ekle (5-15 arası)
     let addedXp = Math.floor(Math.random() * 11) + 5;
     await db.add(`xp_${guildId}_${userId}`, addedXp);
 
-    // Seviye Atlama Kontrolü (Her level için: MevcutLevel * 500 XP)
-    let nextLevelXp = level * 500;
-
-    if (xp + addedXp >= nextLevelXp) {
+    if (xp + addedXp >= level * 500) {
         await db.set(`xp_${guildId}_${userId}`, 0);
         await db.add(`level_${guildId}_${userId}`, 1);
         let newLevel = level + 1;
@@ -53,18 +47,15 @@ client.on('messageCreate', async (message) => {
         const levelEmbed = new EmbedBuilder()
             .setColor("#e74c3c")
             .setTitle("🏮 IzaKaya Seviye Sistemi")
-            .setDescription(`Ooo <@${userId}>, mekanın müdavimi olmuşsun! \n**Level ${newLevel}** oldun. Bir çayımızı içersin artık!`)
+            .setDescription(`Ooo <@${userId}>, mekana iyice alıştın! \n**Level ${newLevel}** oldun.`)
             .setTimestamp();
 
         message.channel.send({ embeds: [levelEmbed] });
 
-        // Otomatik Rol Verme
         let roleName = config.levelRoles[newLevel.toString()];
         if (roleName) {
             let role = message.guild.roles.cache.find(r => r.name === roleName);
-            if (role) {
-                await message.member.roles.add(role).catch(e => console.log("Rol verme hatası: Yetkim yetmiyor olabilir."));
-            }
+            if (role) await message.member.roles.add(role).catch(() => {});
         }
     }
 });
