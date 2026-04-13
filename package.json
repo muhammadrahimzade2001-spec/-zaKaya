@@ -1,0 +1,10 @@
+{
+  "name": "izakaya-bot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "discord.js": "^14.11.0",
+    "quick.db": "^9.1.7",
+    "better-sqlite3": "^11.0.0"
+  }
+}
